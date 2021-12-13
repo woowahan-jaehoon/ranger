@@ -60,24 +60,13 @@ public class RangerSafenetKeySecure implements RangerKMSMKI {
 		providerType = conf.get(PROVIDER, "SunPKCS11");
 		adp = conf.get(KEYSECURE_LOGIN);
 		pkcs11CfgFilePath = conf.get(CFGFILEPATH);
-		/*
-		 * Method sun.security.pkcs11.SunPKCS11 is supported till Java 8.
-		 * Provider.configure() method is available from Java 9 onwards and does not have Backward compatibility.
-		 * We need to remove Java 8 scenario and keep only Java 9+ once we completely upgrade to JAVA 9+.
-		 * */
 		try {
-			int javaVersion = getJavaVersion();
-			/*Minimum java requirement for Ranger KMS is Java 8 and Maximum java supported by Ranger KMS is Java 11*/
-			if(javaVersion == 8){
-				provider = new sun.security.pkcs11.SunPKCS11(pkcs11CfgFilePath);
-			}else if(javaVersion == 9 || javaVersion == 10 || javaVersion == 11){
-				Class<Provider> cls = Provider.class;
-				Method configureMethod = null;
-				configureMethod = cls.getDeclaredMethod("configure", String.class);
-				provider = Security.getProvider(providerType);
-				if(configureMethod != null){
-					provider = (Provider) configureMethod.invoke(provider,pkcs11CfgFilePath);
-				}
+			Class<Provider> cls = Provider.class;
+			Method configureMethod = null;
+			configureMethod = cls.getDeclaredMethod("configure", String.class);
+			provider = Security.getProvider(providerType);
+			if(configureMethod != null){
+				provider = (Provider) configureMethod.invoke(provider,pkcs11CfgFilePath);
 			}
 
 			if(provider != null){
